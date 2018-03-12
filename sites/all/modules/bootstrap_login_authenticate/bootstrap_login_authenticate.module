@@ -1,0 +1,138 @@
+<?php
+
+/**
+ * @file
+ * Add Login authentication popup when user visite on site.
+ */
+
+/**
+ * Implements hook_help().
+ */
+function bootstrap_login_authenticate_help($path, $arg) {
+  switch ($path) {
+    case 'admin/help#bootstrap_login_authenticate':
+      return '<p>' . t('Added authentication facility to user so that only authenticate user can access site and This module is intended for use with the "Bootstrap theme". By default the login authentication block place in content region to work proper.') . '</p>';
+  }
+}
+
+/**
+ * Implements hook_block_info().
+ */
+function bootstrap_login_authenticate_block_info() {
+  $blocks = array();
+  $blocks['bootstrap-login-authenticate'] = array(
+    'info' => t('Bootstrap Login Authenticate'),
+    'status' => TRUE,
+    'region' => 'content',
+    'cache' => DRUPAL_NO_CACHE,
+  );
+  return $blocks;
+}
+
+/**
+ * Implements hook_theme().
+ */
+function bootstrap_login_authenticate_theme($existing, $type, $theme, $path) {
+  return array(
+    'bootstrap_login_authenticate_login_output' => array(
+      'variables' => array(),
+    ),
+  );
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function bootstrap_login_authenticate_block_view($delta = '') {
+  if (!user_is_logged_in()) {
+    drupal_add_js(drupal_get_path('module', 'bootstrap_login_authenticate') . '/js/bootstrap_login_authenticate.js');
+    drupal_add_css(drupal_get_path('module', 'bootstrap_login_authenticate') . '/css/bootstrap_login_authenticate.css');
+
+    $block = array(
+      'subject' => NULL,
+      'content' => array(
+        '#markup' => theme('bootstrap_login_authenticate_login_output'),
+      ),
+    );
+    return $block;
+  }
+}
+
+/**
+ * Theme function for the modal.
+ */
+function theme_bootstrap_login_authenticate_login_output($vars) {
+  module_load_include('inc', 'user', 'user.pages');
+  // Login modal.
+  $login_form = drupal_get_form('user_login');
+  $login_modal = '
+      <div class="modal fade" id="login-modal" role="dialog" aria-labelledby="modalLoginLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h4 class="modal-title" id="modalLoginLabel">' . t('Login') . '</h4>
+            </div>
+            <div class="modal-body"><div class="error-message"></div>
+            ' . drupal_render($login_form) . '
+            </div>
+            <div class="modal-footer-body">
+              <ul class="menu">';
+  if (variable_get('user_register', USER_REGISTER_ADMINISTRATORS_ONLY) != 0) {
+    $login_modal .= '<li>
+                  <a href="#" data-toggle="modal" data-target="#create-account" id ="loginRegister" >' . t('Create new account') . '</a>
+                </li>';
+  }
+  $login_modal .= '<li>
+                  <a href="#" data-toggle="modal" data-target="#forgot_pass" id ="forgotPass">' . t('Request new password') . '</a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+      ';
+  // Register modal and link.
+  $register_modal = '';
+  if (variable_get('user_register', USER_REGISTER_VISITORS_ADMINISTRATIVE_APPROVAL)) {
+    $register_form = drupal_get_form('user_register_form');
+    $register_modal = '
+      <div class="modal fade" id="create-account" role="dialog" aria-labelledby="modalRegisterLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h4 class="modal-title" id="modalRegisterLabel">' . t('Register') . '</h4>
+            </div>
+            <div class="modal-body"><div class="error-message"></div>
+            ' . drupal_render($register_form) . '
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-default" data-dismiss="modal" id ="close-button">' . t('Close') . '</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      ';
+  }
+
+  // Forgot pass modal and link.
+  $forgot_pass_modal = '';
+  $forgot_pass_form = drupal_get_form('user_pass');
+  $forgot_pass_modal = '
+    <div class="modal fade" id="forgot_pass" role="dialog" aria-labelledby="modalRegisterLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4 class="modal-title" id="modalRegisterLabel">' . t('Forgot Password') . '</h4>
+          </div>
+          <div class="modal-body"><div class="error-message"></div>
+          ' . drupal_render($forgot_pass_form) . '
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal" id ="close-button">' . t('Close') . '</button>
+          </div>
+        </div>
+      </div>
+    </div>';
+
+  return $login_modal . $register_modal . $forgot_pass_modal;
+}

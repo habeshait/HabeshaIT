@@ -1,0 +1,15 @@
+# Ignore configuration files that may contain sensitive information.
+sites/*/*settings*.php
+sites/example.sites.php
+
+# Other subdomain related configuration
+sites/*.com
+
+# .htaccess
+.htaccess
+
+# Logs
+error_log
+
+# backups
+sitebackup

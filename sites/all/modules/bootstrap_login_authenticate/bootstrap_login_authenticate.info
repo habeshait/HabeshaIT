@@ -1,0 +1,11 @@
+name = Bootstrap Login authenticate
+description = "A Bootstrap login authenticate facility for the bootstrap theme"
+package = bootstrap
+core = 7.x
+
+; Information added by Drupal.org packaging script on 2016-09-28
+version = "7.x-1.0"
+core = "7.x"
+project = "bootstrap_login_authenticate"
+datestamp = "1475082340"
+
